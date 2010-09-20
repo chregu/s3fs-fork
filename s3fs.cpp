@@ -724,6 +724,10 @@ put_headers(const char* path, headers_t meta) {
       headers.append(key+":"+value);
   }
 
+  if (use_rrs.substr(0,1) == "1") {
+    headers.append("x-amz-storage-class:REDUCED_REDUNDANCY");
+  }
+
   headers.append("Authorization: AWS "+AWSAccessKeyId+":"+calc_signature("PUT", ContentType, date, headers.get(), resource));
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers.get());
 
