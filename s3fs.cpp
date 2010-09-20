@@ -351,6 +351,8 @@ static string service_path = "/";
 // if .size()==0 then local file cache is disabled
 static string use_cache;
 
+static string use_rrs;
+
 // private, public-read, public-read-write, authenticated-read
 static string default_acl("private");
 
@@ -786,6 +788,10 @@ put_local_fd(const char* path, headers_t meta, int fd) {
 			headers.append(key+":"+value);
 	}
 
+	if (use_rrs.substr(0,1) == "1") {
+		headers.append("x-amz-storage-class:REDUCED_REDUNDANCY");
+	}
+	
 	headers.append("Authorization: AWS "+AWSAccessKeyId+":"+calc_signature("PUT", ContentType, date, headers.get(), resource));
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers.get());
 
@@ -1617,6 +1623,10 @@ my_fuse_opt_proc(void *data, const char *arg, int key, struct fuse_args *outargs
 		}
 		if (strstr(arg, "use_cache=") != 0) {
 			use_cache = strchr(arg, '=') + 1;
+			return 0;
+		}
+		if (strstr(arg, "use_rrs=") != 0) {
+			use_rrs = strchr(arg, '=') + 1;
 			return 0;
 		}
 		if (strstr(arg, "host=") != 0) {
